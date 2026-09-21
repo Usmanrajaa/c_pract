@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>C Functions — Complete Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #0e1117;
+      --surface:   #161b27;
+      --surface2:  #1e2535;
+      --border:    #2a3347;
+      --accent:    #4fd1c5;
+      --accent2:   #667eea;
+      --text:      #e2e8f0;
+      --muted:     #8892a4;
+      --keyword:   #c792ea;
+      --fn:        #82aaff;
+      --string:    #c3e88d;
+      --number:    #f78c6c;
+      --comment:   #546e7a;
+      --type:      #ffcb6b;
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        --bg:       #f7f8fc;
+        --surface:  #ffffff;
+        --surface2: #eef0f6;
+        --border:   #d1d9e8;
+        --text:     #1a202c;
+        --muted:    #64748b;
+        --comment:  #94a3b8;
+      }
+    }
+    *, *::before, *::after { box-sizing: inherit; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Layout ── */
+    .wrapper {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 16px;
+      gap: 0;
+    }
+    @media (max-width: 740px) {
+      .wrapper { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 0 24px;
+      margin-bottom: 40px;
+      position: sticky;
+      top: env(safe-area-inset-top, 0px);
+      z-index: 10;
+    }
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 16px;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+    }
+    .lang-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      color: var(--bg);
+      background: var(--accent);
+      padding: 3px 9px;
+      border-radius: 4px;
+    }
+    header h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -.01em;
+    }
+    header p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      padding: 0 24px 80px 0;
+      position: sticky;
+      top: calc(90px + env(safe-area-inset-top, 0px));
+      height: fit-content;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .sidebar nav { border-left: 2px solid var(--border); }
+    .sidebar nav a {
+      display: block;
+      padding: 5px 14px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      line-height: 1.5;
+      transition: color .15s, border-color .15s;
+      border-left: 2px solid transparent;
+      margin-left: -2px;
+    }
+    .sidebar nav a:hover { color: var(--accent); }
+    .sidebar nav a.active { color: var(--accent); border-left-color: var(--accent); }
+    .sidebar-title {
+      font-size: 11px;
+      letter-spacing: .08em;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 0 14px 8px;
+      text-transform: uppercase;
+    }
+
+    /* ── Main Content ── */
+    main { padding-bottom: 80px; }
+
+    /* ── Section Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px 30px;
+      margin-bottom: 20px;
+    }
+    .card-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .card h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 14px;
+      letter-spacing: -.01em;
+    }
+    .card > p, .card > ul {
+      color: var(--muted);
+      margin-bottom: 16px;
+      max-width: 68ch;
+    }
+    .card ul { padding-left: 20px; }
+    .card ul li { margin-bottom: 4px; }
+
+    /* Intro card */
+    .intro-card {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px 30px;
+      margin-bottom: 28px;
+      display: flex;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+    .intro-card .why { flex: 1; min-width: 180px; }
+    .intro-card .why h3 { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 10px; }
+    .intro-card .why li {
+      list-style: none;
+      padding: 6px 0;
+      font-size: 14px;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+    }
+    .intro-card .why li:last-child { border-bottom: none; }
+    .intro-card .why li::before {
+      content: '✓ ';
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* ── Code blocks ── */
+    pre {
+      background: #0a0d14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 20px;
+      overflow-x: auto;
+      margin: 16px 0;
+      position: relative;
+    }
+    pre .label {
+      position: absolute;
+      top: 10px; right: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--comment);
+      letter-spacing: .06em;
+    }
+    code, pre code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text);
+      background: none;
+    }
+    /* Inline code */
+    p code, li code {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 12.5px;
+      color: var(--fn);
+    }
+
+    /* Syntax highlighting via spans */
+    .kw  { color: var(--keyword); }
+    .fn  { color: var(--fn); }
+    .st  { color: var(--string); }
+    .nm  { color: var(--number); }
+    .cm  { color: var(--comment); }
+    .ty  { color: var(--type); }
+    .pp  { color: var(--accent2); }
+
+    /* Output blocks */
+    .output-block {
+      background: #05080f;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin: 8px 0 16px;
+    }
+    .output-label {
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent);
+      font-weight: 600;
+      letter-spacing: .1em;
+      margin-bottom: 6px;
+    }
+    .output-block code { color: var(--string); }
+
+    /* Explanation list */
+    .explain {
+      background: var(--surface2);
+      border-radius: 7px;
+      padding: 14px 18px;
+      margin: 12px 0;
+      list-style: none;
+    }
+    .explain li {
+      padding: 5px 0;
+      font-size: 13.5px;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+    }
+    .explain li:last-child { border-bottom: none; }
+    .explain .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--fn);
+    }
+
+    /* Rule table */
+    .rule-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13.5px; }
+    .rule-table th {
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--surface2);
+      color: var(--accent);
+      font-size: 11px;
+      letter-spacing: .07em;
+      font-weight: 600;
+    }
+    .rule-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
+    .rule-table tr:last-child td { border-bottom: none; }
+    .rule-table tr:hover td { background: var(--surface2); }
+
+    /* Section heading inside card */
+    .sub { font-size: 14px; font-weight: 600; color: var(--accent2); margin: 22px 0 8px; }
+
+    /* Callout */
+    .callout {
+      background: rgba(79,209,197,.07);
+      border: 1px solid rgba(79,209,197,.25);
+      border-radius: 7px;
+      padding: 12px 16px;
+      font-size: 13.5px;
+      color: var(--text);
+      margin: 14px 0;
+    }
+    .callout strong { color: var(--accent); }
+
+    /* Cheat-sheet grid */
+    .cheat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-top: 16px; }
+    .cheat-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+    .cheat-item .desc { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <span class="lang-badge">C</span>
+    <h1>Functions — Complete Guide</h1>
+    <p>18 topics · 15+ examples</p>
+  </div>
+</header>
+
+<div class="wrapper">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Contents</div>
+    <nav id="toc">
+      <a href="#intro">Introduction</a>
+      <a href="#s1">1. Simplest function</a>
+      <a href="#s2">2. Return a value</a>
+      <a href="#s3">3. One parameter</a>
+      <a href="#s4">4. Void / void</a>
+      <a href="#s5">5. Return vs no return</a>
+      <a href="#s6">6. Early return</a>
+      <a href="#s7">7. Passing arrays</a>
+      <a href="#s8">8. Pass by value</a>
+      <a href="#s9">9. Pointers</a>
+      <a href="#s10">10. Swap example</a>
+      <a href="#s11">11. Recursion</a>
+      <a href="#s12">12. Prototype</a>
+      <a href="#s13">13. Static local</a>
+      <a href="#s14">14. Static function</a>
+      <a href="#s15">15. Algorithms</a>
+      <a href="#s16">16. Rules</a>
+      <a href="#s17">17. Cheat sheet</a>
+      <a href="#s18">18. Full example</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main>
+
+    <!-- Intro -->
+    <div class="intro-card" id="intro">
+      <div class="why">
+        <h3>Why use functions?</h3>
+        <ul>
+          <li>Avoid repeating code</li>
+          <li>Break big problems into small pieces</li>
+          <li>Easy to test and fix</li>
+        </ul>
+      </div>
+      <div style="flex:2; min-width:240px; color:var(--muted); font-size:14px; line-height:1.8;">
+        <p>A <strong style="color:var(--text)">function</strong> is a named block of code. You write it once, then call it many times from anywhere in your program. Functions are the building blocks of every C program.</p>
+      </div>
+    </div>
+
+    <!-- 1 -->
+    <div class="card" id="s1">
+      <div class="card-num">01</div>
+      <h2>The Simplest Function</h2>
+      <pre><code><span class="pp">#include &lt;stdio.h&gt;</span>
+
+<span class="kw">void</span> <span class="fn">greet</span>(<span class="kw">void</span>) {
+    <span class="fn">printf</span>(<span class="st">"Hello!\n"</span>);
+}
+
+<span class="ty">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="fn">greet</span>();   <span class="cm">// call it</span>
+    <span class="fn">greet</span>();   <span class="cm">// call again</span>
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT</div><code>Hello!<br>Hello!</code></div>
+      <ul class="explain">
+        <li><span class="mono">void</span> before name → returns nothing</li>
+        <li><span class="mono">void</span> inside <span class="mono">()</span> → takes no input</li>
+        <li><span class="mono">greet()</span> → calls the function</li>
+      </ul>
+    </div>
+
+    <!-- 2 -->
+    <div class="card" id="s2">
+      <div class="card-num">02</div>
+      <h2>Function That Returns a Value</h2>
+      <pre><code><span class="pp">#include &lt;stdio.h&gt;</span>
+
+<span class="ty">int</span> <span class="fn">add</span>(<span class="ty">int</span> a, <span class="ty">int</span> b) {
+    <span class="kw">return</span> a + b;
+}
+
+<span class="ty">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="ty">int</span> result = <span class="fn">add</span>(<span class="nm">3</span>, <span class="nm">4</span>);
+    <span class="fn">printf</span>(<span class="st">"%d\n"</span>, result);
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT</div><code>7</code></div>
+      <ul class="explain">
+        <li><span class="mono">int</span> before name → returns an integer</li>
+        <li><span class="mono">int a, int b</span> → takes two integers</li>
+        <li><span class="mono">return a + b;</span> → sends answer back</li>
+      </ul>
+    </div>
+
+    <!-- 3 -->
+    <div class="card" id="s3">
+      <div class="card-num">03</div>
+      <h2>Function with One Parameter</h2>
+      <pre><code><span class="pp">#include &lt;stdio.h&gt;</span>
+
+<span class="kw">void</span> <span class="fn">printSquare</span>(<span class="ty">int</span> n) {
+    <span class="fn">printf</span>(<span class="st">"%d\n"</span>, n * n);
+}
+
+<span class="ty">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="fn">printSquare</span>(<span class="nm">5</span>);
+    <span class="fn">printSquare</span>(<span class="nm">9</span>);
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT</div><code>25<br>81</code></div>
+    </div>
+
+    <!-- 4 -->
+    <div class="card" id="s4">
+      <div class="card-num">04</div>
+      <h2>Void Return, Void Input</h2>
+      <pre><code><span class="kw">void</span> <span class="fn">line</span>(<span class="kw">void</span>) {
+    <span class="fn">printf</span>(<span class="st">"-----\n"</span>);
+}
+
+<span class="ty">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="fn">line</span>();
+    <span class="fn">printf</span>(<span class="st">"Hi\n"</span>);
+    <span class="fn">line</span>();
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT</div><code>-----<br>Hi<br>-----</code></div>
+    </div>
+
+    <!-- 5 -->
+    <div class="card" id="s5">
+      <div class="card-num">05</div>
+      <h2>Return vs No Return</h2>
+      <pre><code><span class="cm">// Returns value → use result</span>
+<span class="ty">int</span> <span class="fn">square</span>(<span class="ty">int</span> x) {
+    <span class="kw">return</span> x * x;
+}
+
+<span class="cm">// Returns nothing → just does work</span>
+<span class="kw">void</span> <span class="fn">showSquare</span>(<span class="ty">int</span> x) {
+    <span class="fn">printf</span>(<span class="st">"%d\n"</span>, x * x);
+}
+
+<span class="ty">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="ty">int</span> r = <span class="fn">square</span>(<span class="nm">4</span>);    <span class="cm">// store result</span>
+    <span class="fn">printf</span>(<span class="st">"%d\n"</span>, r);    <span class="cm">// 16</span>
+
+    <span class="fn">showSquare</span>(<span class="nm">4</span>);        <span class="cm">// prints 16 directly</span>
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT</div><code>16<br>16</code></div>
+    </div>
+
+    <!-- 6 -->
+    <div class="card" id="s6">
+      <div class="card-num">06</div>
+      <h2>Early Return</h2>
+      <pre><code><span class="pp">#include &lt;stdio.h&gt;</span>
+
+<span class="ty">int</span> <span class="fn">max</span>(<span class="ty">int</span> a, <span class="ty">int</span> b) {
+    <span class="kw">if</span> (a &gt; b) <span class="kw">return</span> a;
+    <span class="kw">return</span> b;
+}
+
+<span class="ty">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="fn">printf</span>(<span class="st">"%d\n"</span>, <span class="fn">max</span>(<span class="nm">10</span>, <span class="nm">20</span>));
+    <span class="fn">printf</span>(<span class="st">"%d\n"</span>, <span class="fn">max</span>(<span class="nm">50</span>, <span class="nm">5</span>));
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT</div><code>20<br>50</code></div>
+      <div class="callout"><strong>Note:</strong> <code>return</code> exits the function immediately. Any code after it is skipped.</div>
+    </div>
+
+    <!-- 7 -->
+    <div class="card" id="s7">
+      <div class="card-num">07</div>
+      <h2>Passing an Array</h2>
+      <pre><code><span class="pp">#include &lt;stdio.h&gt;</span>
+
+<span class="kw">void</span> <span class="fn">printArray</span>(<span class="ty">int</span> a[], <span class="ty">int</span> n) {
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nm">0</span>; i &lt; n; i++)
+        <span class="fn">printf</span>(<span class="st">"%d "</span>, a[i]);
+    <span class="fn">printf</span>(<span class="st">"\n"</span>);
+}
+
+<span class="ty">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="ty">int</span> nums[<span class="nm">5</span>] = {<span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>, <span class="nm">40</span>, <span class="nm">50</span>};
+    <span class="fn">printArray</span>(nums, <span class="nm">5</span>);
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT</div><code>10 20 30 40 50</code></div>
+      <div class="callout"><strong>Important:</strong> You must pass the size <code>n</code> separately. The function has no way to know how long the array is on its own.</div>
+    </div>
+
+    <!-- 8 -->
+    <div class="card" id="s8">
+      <div class="card-num">08</div>
+      <h2>Pass by Value</h2>
+      <p>In C, functions get <strong>copies</strong> of values. Changing them inside does NOT change the original.</p>
+      <pre><code><span class="pp">#include &lt;stdio.h&gt;</span>
+
+<span class="kw">void</span> <span class="fn">change</span>(<span class="ty">int</span> x) {
+    x = <span class="nm">100</span>;   <span class="cm">// only changes the copy</span>
+}
+
+<span class="ty">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="ty">int</span> a = <span class="nm">5</span>;
+    <span class="fn">change</span>(a);
+    <span class="fn">printf</span>(<span class="st">"%d\n"</span>, a);   <span class="cm">// still 5</span>
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT</div><code>5</code></div>
+    </div>
+
+    <!-- 9 -->
+    <div class="card" id="s9">
+      <div class="card-num">09</div>
+      <h2>Change Original Using Pointer</h2>
+      <p>To modify the caller's variable, pass its address with <code>&amp;</code>.</p>
+      <pre><code><span class="pp">#include &lt;stdio.h&gt;</span>
+
+<span class="kw">void</span> <span class="fn">change</span>(<span class="ty">int</span> *x) {
+    *x = <span class="nm">100</span>;  <span class="cm">// change what x points to</span>
+}
+
+<span class="ty">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="ty">int</span> a = <span class="nm">5</span>;
+    <span class="fn">change</span>(&amp;a);          <span class="cm">// pass address</span>
+    <span class="fn">printf</span>(<span class="st">"%d\n"</span>, a);   <span class="cm">// now 100</span>
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT</div><code>100</code></div>
+      <ul class="explain">
+        <li><span class="mono">&amp;a</span> → address of a</li>
+        <li><span class="mono">int *x</span> → x is a pointer</li>
+        <li><span class="mono">*x = 100</span> → change the value at that address</li>
+      </ul>
+    </div>
+
+    <!-- 10 -->
+    <div class="card" id="s10">
+      <div class="card-num">10</div>
+      <h2>Swap Two Numbers (Classic Pointer Example)</h2>
+      <pre><code><span class="pp">#include &lt;stdio.h&gt;</span>
+
+<span class="kw">void</span> <span class="fn">swap</span>(<span class="ty">int</span> *a, <span class="ty">int</span> *b) {
+    <span class="ty">int</span> temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+<span class="ty">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="ty">int</span> x = <span class="nm">1</span>, y = <span class="nm">2</span>;
+    <span class="fn">swap</span>(&amp;x, &amp;y);
+    <span class="fn">printf</span>(<span class="st">"x = %d, y = %d\n"</span>, x, y);
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT</div><code>x = 2, y = 1</code></div>
+    </div>
+
+    <!-- 11 -->
+    <div class="card" id="s11">
+      <div class="card-num">11</div>
+      <h2>Simple Recursion</h2>
+      <p>A function that calls itself — each call must move toward a <strong>base case</strong>.</p>
+      <pre><code><span class="pp">#include &lt;stdio.h&gt;</span>
+
+<span class="ty">int</span> <span class="fn">factorial</span>(<span class="ty">int</span> n) {
+    <span class="kw">if</span> (n &lt;= <span class="nm">1</span>) <span class="kw">return</span> <span class="nm">1</span>;     <span class="cm">// base case</span>
+    <span class="kw">return</span> n * <span class="fn">factorial</span>(n - <span class="nm">1</span>);
+}
+
+<span class="ty">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="fn">printf</span>(<span class="st">"%d\n"</span>, <span class="fn">factorial</span>(<span class="nm">5</span>));
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT</div><code>120</code></div>
+      <pre style="background:#05080f; font-size:12px;"><code><span class="cm">factorial(5) = 5 * factorial(4)
+             = 5 * 4 * factorial(3)
+             = 5 * 4 * 3 * factorial(2)
+             = 5 * 4 * 3 * 2 * factorial(1)
+             = 5 * 4 * 3 * 2 * 1
+             = 120</span></code></pre>
+      <div class="callout"><strong>Rule:</strong> Always have a base case to stop the recursion, or it runs forever.</div>
+    </div>
+
+    <!-- 12 -->
+    <div class="card" id="s12">
+      <div class="card-num">12</div>
+      <h2>Function Prototype (Declaration)</h2>
+      <p>If you use a function before defining it, declare it first so the compiler knows it exists.</p>
+      <pre><code><span class="pp">#include &lt;stdio.h&gt;</span>
+
+<span class="ty">int</span> <span class="fn">add</span>(<span class="ty">int</span> a, <span class="ty">int</span> b);  <span class="cm">// declaration (prototype)</span>
+
+<span class="ty">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="fn">printf</span>(<span class="st">"%d\n"</span>, <span class="fn">add</span>(<span class="nm">2</span>, <span class="nm">3</span>));
+    <span class="kw">return</span> <span class="nm">0</span>;
+}
+
+<span class="ty">int</span> <span class="fn">add</span>(<span class="ty">int</span> a, <span class="ty">int</span> b) {  <span class="cm">// definition</span>
+    <span class="kw">return</span> a + b;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT</div><code>5</code></div>
+    </div>
+
+    <!-- 13 -->
+    <div class="card" id="s13">
+      <div class="card-num">13</div>
+      <h2>Static Local Variable</h2>
+      <p>A <code>static</code> local variable is created once and remembers its value between calls.</p>
+      <pre><code><span class="pp">#include &lt;stdio.h&gt;</span>
+
+<span class="kw">void</span> <span class="fn">counter</span>(<span class="kw">void</span>) {
+    <span class="kw">static</span> <span class="ty">int</span> n = <span class="nm">0</span>;  <span class="cm">// created once, remembered</span>
+    n++;
+    <span class="fn">printf</span>(<span class="st">"%d\n"</span>, n);
+}
+
+<span class="ty">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="fn">counter</span>();
+    <span class="fn">counter</span>();
+    <span class="fn">counter</span>();
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT</div><code>1<br>2<br>3</code></div>
+    </div>
+
+    <!-- 14 -->
+    <div class="card" id="s14">
+      <div class="card-num">14</div>
+      <h2>Static Function</h2>
+      <p><code>static</code> on a function means it is visible only within this file — useful in large projects.</p>
+      <pre><code><span class="kw">static</span> <span class="ty">int</span> <span class="fn">helper</span>(<span class="ty">int</span> x) {
+    <span class="kw">return</span> x * <span class="nm">2</span>;
+}
+
+<span class="ty">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="fn">printf</span>(<span class="st">"%d\n"</span>, <span class="fn">helper</span>(<span class="nm">5</span>));
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT</div><code>10</code></div>
+    </div>
+
+    <!-- 15 -->
+    <div class="card" id="s15">
+      <div class="card-num">15</div>
+      <h2>Common Algorithms</h2>
+
+      <div class="sub">15.1 Find Maximum in Array</div>
+      <pre><code><span class="ty">int</span> <span class="fn">findMax</span>(<span class="ty">int</span> a[], <span class="ty">int</span> n) {
+    <span class="ty">int</span> m = a[<span class="nm">0</span>];
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nm">1</span>; i &lt; n; i++)
+        <span class="kw">if</span> (a[i] &gt; m) m = a[i];
+    <span class="kw">return</span> m;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT — findMax({4,9,2,7,5}, 5)</div><code>9</code></div>
+
+      <div class="sub">15.2 Sum of Array</div>
+      <pre><code><span class="ty">int</span> <span class="fn">sum</span>(<span class="ty">int</span> a[], <span class="ty">int</span> n) {
+    <span class="ty">int</span> total = <span class="nm">0</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nm">0</span>; i &lt; n; i++)
+        total += a[i];
+    <span class="kw">return</span> total;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT — sum({1,2,3,4,5}, 5)</div><code>15</code></div>
+
+      <div class="sub">15.3 Check Even or Odd</div>
+      <pre><code><span class="ty">int</span> <span class="fn">isEven</span>(<span class="ty">int</span> n) {
+    <span class="kw">return</span> n % <span class="nm">2</span> == <span class="nm">0</span>;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT — isEven(4), isEven(7)</div><code>1 (true)<br>0 (false)</code></div>
+      <div class="callout">In C, <strong>1 means true</strong> and <strong>0 means false</strong>.</div>
+
+      <div class="sub">15.4 Count Vowels</div>
+      <pre><code><span class="ty">int</span> <span class="fn">countVowels</span>(<span class="ty">char</span> s[]) {
+    <span class="ty">int</span> count = <span class="nm">0</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nm">0</span>; s[i] != <span class="st">'\0'</span>; i++) {
+        <span class="ty">char</span> c = s[i];
+        <span class="kw">if</span> (c==<span class="st">'a'</span>||c==<span class="st">'e'</span>||c==<span class="st">'i'</span>||c==<span class="st">'o'</span>||c==<span class="st">'u'</span>||
+            c==<span class="st">'A'</span>||c==<span class="st">'E'</span>||c==<span class="st">'I'</span>||c==<span class="st">'O'</span>||c==<span class="st">'U'</span>)
+            count++;
+    }
+    <span class="kw">return</span> count;
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT — countVowels("hello world")</div><code>3</code></div>
+
+      <div class="sub">15.5 Reverse a String In-Place</div>
+      <pre><code><span class="kw">void</span> <span class="fn">reverse</span>(<span class="ty">char</span> s[]) {
+    <span class="ty">int</span> i = <span class="nm">0</span>, j = <span class="fn">strlen</span>(s) - <span class="nm">1</span>;
+    <span class="kw">while</span> (i &lt; j) {
+        <span class="ty">char</span> t = s[i];
+        s[i] = s[j];
+        s[j] = t;
+        i++; j--;
+    }
+}</code></pre>
+      <div class="output-block"><div class="output-label">OUTPUT — reverse("hello")</div><code>olleh</code></div>
+    </div>
+
+    <!-- 16 -->
+    <div class="card" id="s16">
+      <div class="card-num">16</div>
+      <h2>Rules to Remember</h2>
+      <table class="rule-table">
+        <thead><tr><th>Rule</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>C is pass-by-value</td><td>Functions receive copies, not originals</td></tr>
+          <tr><td>Use pointers to modify originals</td><td>Pass <code>&amp;x</code>, receive <code>int *x</code></td></tr>
+          <tr><td>Arrays decay to pointers</td><td>Must pass size separately</td></tr>
+          <tr><td><code>void</code> = no value</td><td>Both for return and parameters</td></tr>
+          <tr><td><code>return</code> exits immediately</td><td>Code after it in the function is skipped</td></tr>
+          <tr><td>Prototype before use</td><td>Declare before <code>main</code> if defining after</td></tr>
+          <tr><td>Static local</td><td>Keeps value across calls</td></tr>
+          <tr><td>Static function</td><td>File-local only</td></tr>
+          <tr><td>Recursion needs base case</td><td>Otherwise: infinite loop / stack overflow</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 17 -->
+    <div class="card" id="s17">
+      <div class="card-num">17</div>
+      <h2>Syntax Cheat Sheet</h2>
+      <div class="cheat-grid">
+        <div class="cheat-item"><div class="desc">No return, no input</div><pre style="margin:0;padding:10px 12px;font-size:12px;"><code><span class="kw">void</span> <span class="fn">f</span>(<span class="kw">void</span>);</code></pre></div>
+        <div class="cheat-item"><div class="desc">No return, one input</div><pre style="margin:0;padding:10px 12px;font-size:12px;"><code><span class="kw">void</span> <span class="fn">f</span>(<span class="ty">int</span> x);</code></pre></div>
+        <div class="cheat-item"><div class="desc">Returns int, two inputs</div><pre style="margin:0;padding:10px 12px;font-size:12px;"><code><span class="ty">int</span> <span class="fn">f</span>(<span class="ty">int</span> a, <span class="ty">int</span> b);</code></pre></div>
+        <div class="cheat-item"><div class="desc">Array + size, no return</div><pre style="margin:0;padding:10px 12px;font-size:12px;"><code><span class="kw">void</span> <span class="fn">f</span>(<span class="ty">int</span> a[], <span class="ty">int</span> n);</code></pre></div>
+        <div class="cheat-item"><div class="desc">Modify via pointer</div><pre style="margin:0;padding:10px 12px;font-size:12px;"><code><span class="kw">void</span> <span class="fn">f</span>(<span class="ty">int</span> *x);</code></pre></div>
+        <div class="cheat-item"><div class="desc">Recursive function</div><pre style="margin:0;padding:10px 12px;font-size:12px;"><code><span class="ty">int</span> <span class="fn">fact</span>(<span class="ty">int</span> n);</code></pre></div>
+        <div class="cheat-item"><div class="desc">Prototype before main</div><pre style="margin:0;padding:10px 12px;font-size:12px;"><code><span class="ty">int</span> <span class="fn">add</span>(<span class="ty">int</span> a, <span class="ty">int</span> b);</code></pre></div>
+      </div>
+    </div>
+
+    <!-- 18 -->
+    <div class="card" id="s18">
+      <div class="card-num">18</div>
+      <h2>Full Working Example</h2>
+      <pre><code><span class="pp">#include &lt;stdio.h&gt;</span>
+
+<span class="ty">int</span> <span class="fn">add</span>(<span class="ty">int</span> a, <span class="ty">int</span> b)       { <span class="kw">return</span> a + b; }
+<span class="ty">int</span> <span class="fn">max</span>(<span class="ty">int</span> a, <span class="ty">int</span> b)       { <span class="kw">return</span> (a &gt; b) ? a : b; }
+
+<span class="ty">int</span> <span class="fn">sumArray</span>(<span class="ty">int</span> a[], <span class="ty">int</span> n) {
+    <span class="ty">int</span> s = <span class="nm">0</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nm">0</span>; i &lt; n; i++) s += a[i];
+    <span class="kw">return</span> s;
+}
+
+<span class="kw">void</span> <span class="fn">swap</span>(<span class="ty">int</span> *a, <span class="ty">int</span> *b) {
+    <span class="ty">int</span> t = *a; *a = *b; *b = t;
+}
+
+<span class="ty">int</span> <span class="fn">factorial</span>(<span class="ty">int</span> n) {
+    <span class="kw">if</span> (n &lt;= <span class="nm">1</span>) <span class="kw">return</span> <span class="nm">1</span>;
+    <span class="kw">return</span> n * <span class="fn">factorial</span>(n - <span class="nm">1</span>);
+}
+
+<span class="ty">int</span> <span class="fn">main</span>(<span class="kw">void</span>) {
+    <span class="fn">printf</span>(<span class="st">"add:  %d\n"</span>, <span class="fn">add</span>(<span class="nm">3</span>, <span class="nm">4</span>));
+    <span class="fn">printf</span>(<span class="st">"max:  %d\n"</span>, <span class="fn">max</span>(<span class="nm">10</span>, <span class="nm">20</span>));
+
+    <span class="ty">int</span> nums[] = {<span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>, <span class="nm">4</span>, <span class="nm">5</span>};
+    <span class="fn">printf</span>(<span class="st">"sum:  %d\n"</span>, <span class="fn">sumArray</span>(nums, <span class="nm">5</span>));
+
+    <span class="ty">int</span> x = <span class="nm">1</span>, y = <span class="nm">2</span>;
+    <span class="fn">swap</span>(&amp;x, &amp;y);
+    <span class="fn">printf</span>(<span class="st">"swap: x=%d y=%d\n"</span>, x, y);
+
+    <span class="fn">printf</span>(<span class="st">"fact: %d\n"</span>, <span class="fn">factorial</span>(<span class="nm">5</span>));
+    <span class="kw">return</span> <span class="nm">0</span>;
+}</code></pre>
+      <div class="output-block">
+        <div class="output-label">OUTPUT</div>
+        <code>add:  7<br>max:  20<br>sum:  15<br>swap: x=2 y=1<br>fact: 120</code>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // Active sidebar link on scroll
+  const sections = document.querySelectorAll('[id]');
+  const links = document.querySelectorAll('#toc a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`#toc a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>
